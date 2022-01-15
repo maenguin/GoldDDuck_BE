@@ -1,0 +1,78 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:gold-dduck;MODE=MYSQL
+    username: sa
+    password:
+
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        query.in_clause_parameter_padding: true
+        storage_engin: innodb
+        hbm2ddl:
+          auto: create-drop
+        show_sql: false
+        format_sql: true
+
+  sql:
+    init:
+      platform: h2
+      data-locations: classpath:sql/data_new.sql
+      encoding: UTF-8
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-name: kakao
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            scope: profile_nickname, profile_image
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            authorization-grant-type: authorization_code
+            client-authentication-method: POST
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+logging.level:
+  org.hibernate.SQL: debug
+  web: debug
+
+server:
+  servlet:
+    encoding:
+      force: true
+      enabled: true
+      charset: UTF-8
+  port: 8080
+
+jwt:
+  header: X-GOLDDDUCK-AUTH
+  issuer: dokev
+  client-secret: ${JWT_CLIENT_SECRET}
+  expiry-seconds: 172800
+
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+    credentials:
+      accessKey: ${AWS_S3_ACCESS_KEY}
+      secretKey: ${AWS_S3_SECRET_KEY}
+    region:
+      static: ${AWS_S3_REGION_STATIC}
+    stack:
+      auto: false
