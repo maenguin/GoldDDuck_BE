@@ -146,52 +146,31 @@ public class Event extends BaseEntity {
         this.leftBlankCount--;
     }
 
+    public void runEvent() {
+        this.eventProgressStatus = EventProgressStatus.RUNNING;
+    }
+
     public void closeEvent() {
         this.eventProgressStatus = EventProgressStatus.CLOSED;
     }
 
-    public void validateEndTime() {
-        boolean eventEndTimeOver = this.endAt.isBefore(LocalDateTime.now());
-        if (eventEndTimeOver) {
-            closeEvent();
-            throw new EventClosedException();
-        }
-    }
-
-    public void validateCloseStatus() {
-        if (this.eventProgressStatus == EventProgressStatus.CLOSED) {
-            throw new EventClosedException();
-        }
-    }
-
     public void validateEventRunning() {
+        renewStatus();
         validateCloseStatus();
-        validateEndTime();
     }
 
     public void renewStatus() {
-        if (this.eventProgressStatus == EventProgressStatus.CLOSED) {
-            return;
-        }
-        if (this.giftChoiceType == GiftChoiceType.FIFO && this.leftGiftCount <= 0) {
-            closeEvent();
-            return;
-        }
-        if (this.giftChoiceType == GiftChoiceType.RANDOM && this.leftGiftCount + this.leftBlankCount <= 0) {
-            closeEvent();
-            return;
-        }
-        if (startAt.isEqual(LocalDateTime.now()) || (startAt.isBefore(LocalDateTime.now()) && endAt.isAfter(
-            LocalDateTime.now()))) {
-            eventProgressStatus = EventProgressStatus.RUNNING;
-            return;
-        }
-        if (endAt.isEqual(LocalDateTime.now()) || endAt.isBefore(LocalDateTime.now())){
-            eventProgressStatus = EventProgressStatus.CLOSED;
-        }
+        this.eventProgressStatus.getEventStatus().renew(this);
     }
 
     public void deleteEvent() {
         this.deletedAt = LocalDateTime.now();
     }
+
+    private void validateCloseStatus() {
+        if (this.eventProgressStatus == EventProgressStatus.CLOSED) {
+            throw new EventClosedException();
+        }
+    }
+
 }
