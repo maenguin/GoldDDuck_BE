@@ -6,4 +6,4 @@
 
 # 리팩토링
 - [Event 엔티티에 상태 패턴 적용](https://delirious-sock-4dc.notion.site/Event-b59852337fc64458a1018d7d66b4e39b)
-
+- [의도와 구현을 기준으로 메서드 추출](https://delirious-sock-4dc.notion.site/96e2e855f0254f5a82d46f20596ff3d7)
