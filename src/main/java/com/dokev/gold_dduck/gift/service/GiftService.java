@@ -27,7 +27,6 @@ import com.dokev.gold_dduck.member.domain.Member;
 import com.dokev.gold_dduck.member.domain.RoleGroupType;
 import com.dokev.gold_dduck.member.repository.MemberRepository;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -192,30 +191,37 @@ public class GiftService {
         Event event = eventRepository.findByIdForUpdate(eventId)
             .orElseThrow(() -> new EntityNotFoundException(Event.class, eventId));
         event.validateEventRunning();
+
         Member member = memberRepository.findByIdWithGroup(memberId)
             .orElseThrow(() -> new EntityNotFoundException(Member.class, memberId));
         checkAlreadyParticipatedMember(event, member);
 
-        int candidateCount = event.getLeftGiftCount() + event.getLeftBlankCount();
-        if (candidateCount <= 1) {
-            event.closeEvent();
-        }
-        int offset = new Random().nextInt(candidateCount);
-        Optional<GiftItemSimpleDto> maybeGiftItem = giftItemQueryRepository.findSimpleGiftItemByRandom(eventId,
-            offset);
-        if (maybeGiftItem.isPresent()) {
-            GiftItemSimpleDto chosenGiftItem = maybeGiftItem.get();
-            event.decreaseLeftGiftCount();
-            giftItemRepository.allocateMemberToGiftItem(chosenGiftItem.getGiftItemId(), memberId);
-            eventLogRepository.save(
-                new EventLog(event, member, giftRepository.getById(chosenGiftItem.getGiftId()),
-                    giftItemRepository.getById(chosenGiftItem.getGiftItemId())));
-            return chosenGiftItem;
-        } else {
-            event.decreaseLeftBlankCount();
-            eventLogRepository.save(new EventLog(event, member, null, null));
-            throw new GiftBlankDrawnException();
-        }
+        int candidateCount = event.closeIfGiftCandidateCountIsOne();
+
+        Optional<GiftItemSimpleDto> maybeGiftItem = findRandomGiftOne(eventId, candidateCount);
+        maybeGiftItem.ifPresentOrElse(
+            chosenGiftItem -> processWhenGiftChosen(event, member, chosenGiftItem),
+            () -> processWhenBlankChosen(event, member)
+        );
+        return maybeGiftItem.get();
+    }
+
+    private Optional<GiftItemSimpleDto> findRandomGiftOne(long eventId, int giftCandidateCount) {
+        int offset = new Random().nextInt(giftCandidateCount);
+        return giftItemQueryRepository.findSimpleGiftItemByRandom(eventId, offset);
+    }
+
+    private void processWhenGiftChosen(Event event, Member member, GiftItemSimpleDto chosenGiftItem) {
+        event.decreaseLeftGiftCount();
+        giftItemRepository.allocateMemberToGiftItem(chosenGiftItem.getGiftItemId(), member.getId());
+        eventLogRepository.save(new EventLog(event, member, giftRepository.getById(chosenGiftItem.getGiftId()),
+            giftItemRepository.getById(chosenGiftItem.getGiftItemId())));
+    }
+
+    private void processWhenBlankChosen(Event event, Member member) {
+        event.decreaseLeftBlankCount();
+        eventLogRepository.save(new EventLog(event, member, null, null));
+        throw new GiftBlankDrawnException();
     }
 
     public GiftItemListDto searchDescByMember(

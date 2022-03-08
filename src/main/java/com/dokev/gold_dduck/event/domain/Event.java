@@ -173,4 +173,16 @@ public class Event extends BaseEntity {
         }
     }
 
+    public int getGiftCandidateCount() {
+        return this.leftGiftCount + this.leftBlankCount;
+    }
+
+    public int closeIfGiftCandidateCountIsOne() {
+        int candidateCount = getGiftCandidateCount();
+        if (candidateCount <= 1) {
+            closeEvent();
+        }
+        return candidateCount;
+    }
+
 }
