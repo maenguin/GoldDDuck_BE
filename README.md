@@ -4,7 +4,9 @@
 
 원본 리포지토리는 [링크](https://github.com/prgrms-web-devcourse/Team_DOKEV_GOLDDDUCK_BE) 를 확인해주시면 감사하겠습니다.
 
-# 리팩토링
+# 프로젝트 수행 당시의 기록
+- [Artillery를 사용한 스트레스 테스트와 성능 개선 이야기](https://delirious-sock-4dc.notion.site/Artillery-b320f86251a64251ad4575c538325472)
+# 리팩토링 기록
 - [민감 정보 관리방법 Git SubModule에서 환경변수로 전환](https://delirious-sock-4dc.notion.site/Git-SubModule-c4030e89f32e42cc8e5868facee6df00)
 - [Event 엔티티에 상태 패턴 적용](https://delirious-sock-4dc.notion.site/Event-b59852337fc64458a1018d7d66b4e39b)
 - [의도와 구현을 기준으로 메서드 추출](https://delirious-sock-4dc.notion.site/96e2e855f0254f5a82d46f20596ff3d7)
